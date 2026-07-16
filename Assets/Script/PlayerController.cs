@@ -4,9 +4,17 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
 	[SerializeField] float moveSpeed = 5f;
+	[SerializeField] float attackRange = 2f;
+	[SerializeField] float attackRadius = 1f;
+	[SerializeField] int attackPower = 1;
 	Rigidbody rbody;
 	Animator animator;
 	bool canMove = true;
+	bool isDead = false;
+	bool isInvincible = false;
+	int hp = 10;
+
+	enum PlayerState { Idle,Move,Attack,Damage,Dead}
 	private void Start()
 	{
 		rbody = GetComponent<Rigidbody>();
@@ -63,5 +71,29 @@ public class PlayerController : MonoBehaviour
 	}
 	public void AttackHit()
 	{
+		Vector3 center = transform.position+transform.forward * attackRange;
+		Collider[] hitEnemies = Physics.OverlapSphere(center, attackRadius);
+
+		foreach (Collider hit in hitEnemies)
+		{
+			ZombieController zombie = hit.GetComponent<ZombieController>();
+			if (zombie != null)
+			{
+				zombie.TakeDamage(attackPower);
+			}
+		}
+	}
+	public void TakeDamage(int damage)
+	{
+		if (isDead || isInvincible)
+			return;
+		hp -= damage;
+		canMove = true;
+		animator.SetTrigger("Damage");
+		if(hp<=0)
+		{
+			isDead = true;
+			animator.SetTrigger("Death");
+		}
 	}
 }
