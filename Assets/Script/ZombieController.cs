@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ZombieController : MonoBehaviour
@@ -11,6 +12,7 @@ public class ZombieController : MonoBehaviour
 	[SerializeField] int maxHP = 3;
 	int hp;
 	bool isAttacking = false;
+	bool canMove = true;
 	float attackTimer = 0f;
 
 	Rigidbody rbody;
@@ -35,10 +37,13 @@ public class ZombieController : MonoBehaviour
 		float distance = diff.magnitude;
 		if (distance > attackRange)
 		{
-			Vector3 dir = diff.normalized;
-			rbody.linearVelocity = new Vector3(dir.x * speed, rbody.linearVelocity.y, dir.z * speed);
-			transform.forward = dir;
-			animator.SetBool("ZWalk", true);
+			if (canMove)
+			{
+				Vector3 dir = diff.normalized;
+				rbody.linearVelocity = new Vector3(dir.x * speed, rbody.linearVelocity.y, dir.z * speed);
+				transform.forward = dir;
+				animator.SetBool("ZWalk", true);
+			}
 		}
 		else
 		{
@@ -65,6 +70,10 @@ public class ZombieController : MonoBehaviour
 		{
 			Destroy(gameObject);
 		}
+		else
+		{
+			ZombieDamage();
+		}
 	}
 
 	public void ZombieAttackHit()
@@ -79,5 +88,12 @@ public class ZombieController : MonoBehaviour
 	public void ZombieAttackEnd()
 	{
 		isAttacking = false;
+		canMove = true;
+	}
+
+	public void ZombieDamage()
+	{
+		animator.SetTrigger("ZDamage");
+		canMove = true;
 	}
 }
